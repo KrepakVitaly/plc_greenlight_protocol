@@ -242,3 +242,20 @@ Bool CircularBuffer_IsFull(CircularBuffer_Typedef* buf)
     return True;
   }
 }
+
+uint16_t dist (uint16_t head, uint16_t tail, uint16_t module)
+{
+  //1. normal mode T > H and |T - H| < MAX_SIZE, dist = T - H
+  if (tail > head)
+    return tail - head;
+  //2. reverse mode T < H and |T - H| < MAX_SIZE, dist = MODULE - (H - T)
+  else if (tail < head)
+    return module - (head - tail); 
+  
+  //3. neigbor mode T > H and |E - H| = 1, size = T - H = 1
+  //4. neigbor reverse mode H > T and |T - S| = 1, size = MODULE - H + T
+  //5. edge reverse mode T > H and |T - H| = 1, size = H + 1 = 1
+  //6. max mode T > H and |T - H| = MAX_SIZE
+  return 0;
+}
+

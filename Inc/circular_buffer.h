@@ -19,7 +19,7 @@
   #define __bool_true_false_are_defined 1
   #include "stm32f4xx_hal.h"
 #endif
-#ifdef STM32F030x6
+#if defined(STM32F030x6) || defined(STM32F031x6)
   #include "stm32f0xx_hal.h"
 #endif
 
@@ -75,6 +75,8 @@ uint8_t CircularBuffer_RemoveFirstNValues(CircularBuffer_Typedef* buf,
                                           uint16_t num);
 										  
 uint8_t CircularBuffer_GetRandValue(CircularBuffer_Typedef* buf, uint16_t idx);
+
+// uint16_t dist (uint16_t head, uint16_t tail, uint16_t module);
 
 #ifdef __cplusplus
 }
