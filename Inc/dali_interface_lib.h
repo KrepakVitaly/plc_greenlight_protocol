@@ -1,19 +1,21 @@
 /**
   ******************************************************************************
-  * @file           : uart_wrapper.h
-  * @brief          : Header for uart_wrapper.c file.
+  * @file           : dali_interface_lib.h
+  * @brief          : Header for dali_interface_lib.c file.
   *                   This file contains the common defines of the application.
   *****************************************************************************/
 /* Define to prevent recursive inclusion -------------------------------------*/
 
-#ifndef __UART_WRAPPER_H_
-#define __UART_WRAPPER_H_
+#ifndef __DALI_INTERFACE_LIB_H_
+#define __DALI_INTERFACE_LIB_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 	
+#ifdef STM32F031x6
 #include "stm32f0xx_hal.h"
+#endif
 
 #define DALI_MAX_CTR 34
 
@@ -47,4 +49,4 @@ uint8_t step_DALI_set_brightness(uint8_t * dali_cntr);
 }
 #endif
 
-#endif  /* __UART_WRAPPER_H_ */
+#endif  /* __DALI_INTERFACE_LIB_H_ */

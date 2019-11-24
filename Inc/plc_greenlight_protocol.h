@@ -39,7 +39,6 @@ extern "C" {
 #define REGULAR_PACKET_SIZE 22
 #define REGULAR_PACKET_HEAD_SIZE  3
 #define REGULAR_PACKET_CRC_SIZE   4
-
 #define REGULAR_PACKET_ADDRESS_SIZE  3
 
 #define REGULAR_PACKET_DATA_SIZE  (REGULAR_PACKET_SIZE - \
@@ -49,7 +48,29 @@ extern "C" {
 
 #define REGULAR_PACKET_HEAD_BYTE_1 0x56								   
 #define REGULAR_PACKET_HEAD_BYTE_2 0x12
-								   
+
+#define REGULAR_CMD_POS (REGULAR_PACKET_HEAD_SIZE+REGULAR_PACKET_ADDRESS_SIZE+0)
+//#define REGULAR_CMD_POS_1 (REGULAR_PACKET_HEAD_SIZE+REGULAR_PACKET_ADDRESS_SIZE+1)
+//#define REGULAR_CMD_POS_2 (REGULAR_PACKET_HEAD_SIZE+REGULAR_PACKET_ADDRESS_SIZE+2)
+
+#define REGULAR_DATA_START_POS (REGULAR_CMD_POS+1)
+
+#define REGULAR_CMD_SBA       0x00000001 // Set Brightness Address
+#define REGULAR_CMD_SBM       0x00000002 // Set Brightness Multi
+#define REGULAR_CMD_SBB       0x00000003 // Set Brightness Broad
+#define REGULAR_CMD_GAS       0x00000004 // Get Address Status
+#define REGULAR_CMD_GAM       0x00000005 // Get Address MAC
+#define REGULAR_CMD_GAT       0x00000006 // Get Address Temp
+#define REGULAR_CMD_GAV       0x00000007 // Get Address Volts
+#define REGULAR_CMD_GAA       0x00000008 // Get Address Amperes
+#define REGULAR_CMD_GAB       0x00000009 // Get Address Brightness
+#define REGULAR_CMD_GABV      0x0000000A // Get Address Board Version
+#define REGULAR_CMD_GAHV      0x0000000B // Get Address HEX Version
+#define REGULAR_CMD_GATIME    0x0000000C // Get Address Time
+#define REGULAR_CMD_GATIMECRC 0x0000000D // Get Address TimeTable CRC
+#define REGULAR_CMD_GHA       0x0000000E // Get Host Address
+#define REGULAR_CMD_UAH       0x0000000F // Update Address HEX
+
 #if REGULAR_PACKET_DATA_SIZE <= 0
 	#error Wrong size of data sector of regular packet ( < 0 )
 #endif
@@ -68,7 +89,21 @@ extern "C" {
 
 #define MAINTENANCE_PACKET_HEAD_BYTE_1 0x26									   
 #define MAINTENANCE_PACKET_HEAD_BYTE_2 0x24
-									   
+
+// TODO change 3 pos to 1 pos
+#define MAINTENANCE_CMD_POS  (MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+0)
+//#define MAINTENANCE_CMD_POS_1  (MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+1)
+//#define MAINTENANCE_CMD_POS_2  (MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+2)
+
+#define MAINTENANCE_DATA_START_POS (MAINTENANCE_CMD_POS+1)
+
+#define MAINTENANCE_CMD_SAD       0x00000001 // Set Address
+#define MAINTENANCE_CMD_SGA       0x00000002 // Set Gateway Address
+#define MAINTENANCE_CMD_SAR       0x00000003 // Set As Router
+#define MAINTENANCE_CMD_ARTR      0x00000004 // Add Route Table Record
+#define MAINTENANCE_CMD_UAH       0x00000005 // Update Address HEX
+
+
 #if MAINTENANCE_PACKET_DATA_SIZE <= 0
 	#error Wrong size of data sector of Maintenance packet ( < 0 )
 #endif

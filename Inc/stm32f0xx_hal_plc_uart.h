@@ -33,6 +33,9 @@
 extern "C" {
 #endif
 
+#define UART_TIMEOUT 100
+#define BOOT_DELAY 5000
+
 /**
   * @brief PLC UART Init Structure definition
   */
@@ -100,6 +103,37 @@ uint8_t HAL_PLC_UART_Rxed_Repeater_Packet(void);
 uint8_t HAL_PLC_UART_Is_Packet_Received(void);
 uint8_t HAL_PLC_UART_CheckRegularPacket(void);
 
+uint8_t IsValidMaintenancePacket(uint8_t *);
+uint8_t IsValidRegularPacket(uint8_t *);
+uint8_t ProceedMaintenanceCmd(uint8_t *);
+uint8_t ProceedRegularCmd(uint8_t *);
+uint8_t RegularCheckIPaddress (uint8_t * packet);
+uint8_t RegularCheckIPaddressMulti (uint8_t * packet);
+
+uint8_t SendRegularPacketToHost(uint8_t *);
+uint8_t SendMaintenancePacketToHost(uint8_t *);
+
+uint8_t MaintenanceSetAddress(uint8_t *); // Set Address
+uint8_t MaintenanceSetGateway(uint8_t *);// Set Gateway Address
+uint8_t MaintenanceSetAsRoutr(uint8_t *);// Set As Router
+uint8_t MaintenanceAddRoutrTb(uint8_t *);// Add Route Table Record
+uint8_t MaintenanceUpdateFirm(uint8_t *);// Update Address HEX
+
+uint8_t RegularSetBrightAddrs(uint8_t *);
+uint8_t RegularSetBrightMulti(uint8_t *);
+uint8_t RegularSetBrightBroad(uint8_t *);
+uint8_t RegularGetAddrsStatus(uint8_t *);
+uint8_t RegularGetAddressUUID(uint8_t *);
+uint8_t RegularGetAddressTemp(uint8_t *);
+uint8_t RegularGetAddressVolt(uint8_t *);
+uint8_t RegularGetAddressAmps(uint8_t *);
+uint8_t RegularGetAddrsBright(uint8_t *);
+uint8_t RegularGetAdrBoardVer(uint8_t *);
+uint8_t RegularGetAddrFirmVer(uint8_t *);
+uint8_t RegularGetAddressTime(uint8_t *);
+uint8_t RegularGetAdrsTimeCRC(uint8_t *);
+uint8_t RegularGetHostAddress(uint8_t *);
+uint8_t RegularUpdateFirmware(uint8_t *);
 
 
 #ifdef __cplusplus

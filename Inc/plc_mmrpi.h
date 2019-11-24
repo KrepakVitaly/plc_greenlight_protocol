@@ -18,6 +18,7 @@ extern "C" {
 
 #include "stm32f0xx_hal.h"
 
+
 #define MY_ADDR_0 0x00
 #define MY_ADDR_1 0x00
 #define MY_ADDR_2 0x02
@@ -29,7 +30,7 @@ extern "C" {
 #define HEAD_BYTE_2 0x12
 #define HEAD_BYTE_3 0x54
 
-#define PACKET_SIZE 13
+#define PACKET_SIZE 22
 
 extern uint8_t plc_uart_buf;
 extern uint8_t plc_uart_answer_ok[PACKET_SIZE];

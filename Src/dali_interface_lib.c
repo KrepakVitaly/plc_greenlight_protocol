@@ -28,5 +28,5 @@ uint8_t step_DALI_set_brightness(uint8_t * dali_cntr)
 //    }
 //    
 //    (*dali_cntr)++;
-//    return 1;
+    return 1;
 }
