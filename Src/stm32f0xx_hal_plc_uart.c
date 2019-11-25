@@ -22,11 +22,12 @@
 #include "stm32_uid.h"
 #include "usart.h"
 #include "main.h"
+#include "tim.h"
 
 uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
 {
   // Test packet length byte
-  if (test_packet[0] != MAINTENANCE_PACKET_SIZE)
+  if (test_packet[0] != MAINTENANCE_PACKET_SIZE - 1)
     return 0;
   // Test packet head 1 byte
   if (test_packet[1] != MAINTENANCE_PACKET_HEAD_BYTE_1)
@@ -35,20 +36,20 @@ uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
   if (test_packet[2] != MAINTENANCE_PACKET_HEAD_BYTE_2)
     return 0;
   
-  uint32_t rx_part_id1 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+0] << 24) + 
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+1] << 16) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+2] << 8 ) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+3] << 0 );
+  uint32_t rx_part_id1 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+0] << 0) + 
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+1] << 8) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+2] << 16 ) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+3] << 24 );
   
-  uint32_t rx_part_id2 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+4] << 24) + 
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+5] << 16) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+6] << 8 ) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+7] << 0 );
+  uint32_t rx_part_id2 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+4] << 0) + 
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+5] << 8) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+6] << 16 ) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+7] << 24 );
   
-  uint32_t rx_part_id3 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+8] << 24) + 
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+9] << 16) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+10] << 8 ) +
-                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+11] << 0 );
+  uint32_t rx_part_id3 = ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+8] << 0) + 
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+9] << 8) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+10] << 16 ) +
+                         ((uint32_t)test_packet[REGULAR_PACKET_HEAD_SIZE+11] << 24 );
   // Test target id of the packet
   if (Signature.idPart1 != rx_part_id1)
     return 0;
@@ -56,10 +57,7 @@ uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
     return 0;
   if (Signature.idPart3 != rx_part_id3)
     return 0;  
-  
-  HAL_CRC_DeInit(&hcrc);
-  HAL_CRC_Init(&hcrc);
-  
+
   uint32_t calc_crc = HAL_CRC_Calculate(&hcrc, 
                         (uint32_t*)test_packet, 
                         MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE);
@@ -68,6 +66,7 @@ uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
                       ((uint32_t)test_packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+1] << 16) +
                       ((uint32_t)test_packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+2] << 8 ) +
                       ((uint32_t)test_packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+3] << 0 );
+  
   // Test packet crc sum
   if (rxed_crc != calc_crc)
     return 0;
@@ -78,7 +77,7 @@ uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
 uint8_t IsValidRegularPacket(uint8_t * test_packet)
 {
   // Test packet length byte
-  if (test_packet[0] != REGULAR_PACKET_SIZE)
+  if (test_packet[0] != REGULAR_PACKET_SIZE - 1)
     return 0;
   
   if (test_packet[1] != REGULAR_PACKET_HEAD_BYTE_1)
@@ -87,11 +86,8 @@ uint8_t IsValidRegularPacket(uint8_t * test_packet)
   if (test_packet[2] != REGULAR_PACKET_HEAD_BYTE_2)
     return 0;
 
-  HAL_CRC_DeInit(&hcrc);
-  HAL_CRC_Init(&hcrc);
-  
   uint32_t calc_crc = HAL_CRC_Calculate(&hcrc, 
-                        (uint32_t*)&test_packet, 
+                        (uint32_t*)test_packet, 
                         REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE);
   
   uint32_t rxed_crc = ((uint32_t)test_packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE]   << 24) + 
@@ -111,7 +107,7 @@ uint8_t RegularCheckIPaddress (uint8_t * packet)
                       ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 8) +
                       ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 0);
   
-  if (rxed_ip != Signature.IP_address)
+  if ((rxed_ip & 0x00FFFFFF) != (Signature.IP_address & 0x00FFFFFF))
     return 0;
   
   return 1;
@@ -123,7 +119,7 @@ uint8_t RegularCheckIPaddressMulti (uint8_t * packet)
                       ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 8) +
                       ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 0);
   
-  if ((rxed_ip & 0xFFFFFF00) != (Signature.IP_address & 0xFFFFFF00))
+  if ((rxed_ip & 0x00FFFF00) != (Signature.IP_address & 0x00FFFF00))
     return 0;
   
   return 1;
@@ -189,17 +185,14 @@ uint8_t SendRegularPacketToHost(uint8_t * data)
             0x00, 0x00, 0x00, 0x00
   };
   
-  HAL_CRC_DeInit(&hcrc);
-  HAL_CRC_Init(&hcrc);
-  
   uint32_t calc_crc = HAL_CRC_Calculate(&hcrc, 
                         (uint32_t*)packet, 
                         MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE);
   
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc << 24);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc << 16);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc << 8);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc << 0);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 0);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 8);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 16);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 24);
   
   return HAL_UART_Transmit(&huart1, packet, REGULAR_PACKET_SIZE, UART_TIMEOUT);
 }
@@ -226,17 +219,15 @@ uint8_t SendMaintenancePacketToHost(uint8_t * data)
             0x00, 0x00, 0x00, 0x00
   };
   
-  HAL_CRC_DeInit(&hcrc);
-  HAL_CRC_Init(&hcrc);
   
   uint32_t calc_crc = HAL_CRC_Calculate(&hcrc, 
                         (uint32_t*)packet, 
                         MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE);
   
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc << 24);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc << 16);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc << 8);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc << 0);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 0);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 8);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 16);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 24);
   
   return HAL_UART_Transmit(&huart1, packet, MAINTENANCE_PACKET_SIZE, UART_TIMEOUT);
 }
@@ -293,7 +284,6 @@ uint8_t MaintenanceUpdateFirm(uint8_t * packet)
   uint8_t data[MAINTENANCE_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00};
   
   SendMaintenancePacketToHost(data); // Send Okay packet
-  HAL_Delay(BOOT_DELAY);
   JumpToBootloader();
   return 0;
 }
@@ -307,6 +297,9 @@ uint8_t RegularSetBrightAddrs(uint8_t * packet)
     return 1;
   
   brightness_g = packet[REGULAR_DATA_START_POS];
+  
+  user_pwm_setvalue(brightness_g);
+  
   return 0;
 }
 
@@ -350,20 +343,20 @@ uint8_t RegularGetAddressUUID(uint8_t * packet)
   uint8_t data[REGULAR_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00};
-  data[0] = Signature.idPart1 >> 24;
-  data[1] = Signature.idPart1 >> 16;
-  data[2] = Signature.idPart1 >> 8;
-  data[3] = Signature.idPart1 >> 0;
+  data[0] = Signature.idPart1 >> 0;
+  data[1] = Signature.idPart1 >> 8;
+  data[2] = Signature.idPart1 >> 16;
+  data[3] = Signature.idPart1 >> 24;
 
-  data[4] = Signature.idPart2 >> 24;
-  data[5] = Signature.idPart2 >> 16;
-  data[6] = Signature.idPart2 >> 8;
-  data[7] = Signature.idPart2 >> 0;
+  data[4] = Signature.idPart2 >> 0;
+  data[5] = Signature.idPart2 >> 8;
+  data[6] = Signature.idPart2 >> 16;
+  data[7] = Signature.idPart2 >> 24;
                                             
-  data[8] = Signature.idPart3 >> 24;
-  data[9] = Signature.idPart3 >> 16;
-  data[10] = Signature.idPart3 >> 8;
-  data[11] = Signature.idPart3 >> 0;
+  data[8] = Signature.idPart3 >> 0;
+  data[9] = Signature.idPart3 >> 8;
+  data[10] = Signature.idPart3 >> 16;
+  data[11] = Signature.idPart3 >> 24;
                                             
   SendRegularPacketToHost(data); // Send Okay packet
   return 0;
