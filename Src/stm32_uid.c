@@ -27,9 +27,11 @@ void Init_UUID(void)
   Signature.Firmware_Ver = 1250;
   Signature.Rev_Board = 1250;
   
-  uint32_t flash_part_id1 = *((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_1);
-  uint32_t flash_part_id2 = *((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_2);
-  uint32_t flash_part_id3 = *((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_3);
+  Signature.Firmware_CRC32 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET));
+  
+  uint32_t flash_part_id1 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_1));
+  uint32_t flash_part_id2 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_2));
+  uint32_t flash_part_id3 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_3));
   
   HAL_FLASH_Unlock();
   if (Signature.idPart1 != flash_part_id1)

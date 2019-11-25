@@ -289,8 +289,6 @@ uint8_t MaintenanceUpdateFirm(uint8_t * packet)
 
 uint8_t RegularSetBrightAddrs(uint8_t * packet)
 {
-  // TODO insert PWM update func
-  
   if (RegularCheckIPaddress (packet) != 1)
     return 1;
   
@@ -304,20 +302,18 @@ uint8_t RegularSetBrightAddrs(uint8_t * packet)
 
 uint8_t RegularSetBrightMulti(uint8_t * packet)
 {
-  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-  // TODO insert PWM update func
   if (RegularCheckIPaddressMulti (packet) != 1)
     return 1;
   
   brightness_g = packet[REGULAR_DATA_START_POS+2];
+  user_pwm_setvalue(brightness_g);
   return 0;
 }
 
 uint8_t RegularSetBrightBroad(uint8_t * packet)
 {
-  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-  // TODO insert PWM update func
   brightness_g = packet[REGULAR_DATA_START_POS+2];
+  user_pwm_setvalue(brightness_g);
   return 0;
 }
 

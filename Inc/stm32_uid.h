@@ -30,12 +30,13 @@
 #define FLASH_ADDR_FOR_STORING 0x08003C00
 #endif
 
-#define FLASH_PART_1 0x00
-#define FLASH_PART_2 0x01
-#define FLASH_PART_3 0x02
-#define FLASH_IP_OFFSET 0x03
-#define FLASH_HOST_OFFSET 0x04
-#define OFFLINE_OFFSET 0x05
+#define FLASH_PART_1       0x00
+#define FLASH_PART_2       0x01
+#define FLASH_PART_3       0x02
+#define FLASH_IP_OFFSET    0x03
+#define FLASH_HOST_OFFSET  0x04
+#define OFFLINE_OFFSET     0x05
+#define FW_CRC_OFFSET      0x06
 
 typedef struct {
     uint16_t x;  // x-coordinate
@@ -43,6 +44,7 @@ typedef struct {
     uint8_t Wafer;  // Wafer number
     char Lot[7];  // Lot number
     
+
     uint32_t idPart1;
     uint32_t idPart2 ;
     uint32_t idPart3;
@@ -51,6 +53,7 @@ typedef struct {
     uint8_t Offline;
     uint32_t Rev_Board;
     uint32_t Firmware_Ver;
+    uint32_t Firmware_CRC32;
     uint16_t flash_size;
 } STM32_UUID;
 
