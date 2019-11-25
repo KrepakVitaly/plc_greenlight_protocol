@@ -103,9 +103,9 @@ uint8_t IsValidRegularPacket(uint8_t * test_packet)
 
 uint8_t RegularCheckIPaddress (uint8_t * packet)
 {
-  uint32_t rxed_ip = ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]   << 16) + 
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 8) +
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 0);
+  uint32_t rxed_ip =  ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]   << 24) + 
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 16) +
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 8);
   
   if ((rxed_ip & 0x00FFFFFF) != (Signature.IP_address & 0x00FFFFFF))
     return 0;
@@ -115,9 +115,9 @@ uint8_t RegularCheckIPaddress (uint8_t * packet)
 
 uint8_t RegularCheckIPaddressMulti (uint8_t * packet)
 {
-  uint32_t rxed_ip = ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]   << 16) + 
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 8) +
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 0);
+  uint32_t rxed_ip = ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]  << 24 ) + 
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1] << 16 ) +
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2] << 8);
   
   if ((rxed_ip & 0x00FFFF00) != (Signature.IP_address & 0x00FFFF00))
     return 0;
@@ -176,9 +176,9 @@ uint8_t SendRegularPacketToHost(uint8_t * data)
             REGULAR_PACKET_SIZE - 1,      //  |
             REGULAR_PACKET_HEAD_BYTE_1,   //  | Head
             REGULAR_PACKET_HEAD_BYTE_2,   //  |
-            (uint8_t)(Signature.Host_address >> 16) & 0xFF, // |
-            (uint8_t)(Signature.Host_address >> 8)  & 0xFF, // | Host Address
-            (uint8_t)(Signature.Host_address >> 0)  & 0xFF, // |
+            (uint8_t)(Signature.Host_address >> 24) & 0xFF, // |
+            (uint8_t)(Signature.Host_address >> 16)  & 0xFF, // | Host Address
+            (uint8_t)(Signature.Host_address >> 8)  & 0xFF, // |
             data[0], data[1], data [2], data [3], 
             data[4], data[5], data [6], data [7], 
             data[8], data[9], data[10], data[11], 
@@ -189,10 +189,10 @@ uint8_t SendRegularPacketToHost(uint8_t * data)
                         (uint32_t*)packet, 
                         MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE);
   
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 0);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 8);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 16);
-  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 24);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 24);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 16);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 8);
+  packet[REGULAR_PACKET_SIZE-REGULAR_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 0);
   
   return HAL_UART_Transmit(&huart1, packet, REGULAR_PACKET_SIZE, UART_TIMEOUT);
 }
@@ -224,10 +224,10 @@ uint8_t SendMaintenancePacketToHost(uint8_t * data)
                         (uint32_t*)packet, 
                         MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE);
   
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 0);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 8);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 16);
-  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 24);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE]   = (uint8_t)(calc_crc >> 24);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+1] = (uint8_t)(calc_crc >> 16);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+2] = (uint8_t)(calc_crc >> 8);
+  packet[MAINTENANCE_PACKET_SIZE-MAINTENANCE_PACKET_CRC_SIZE+3] = (uint8_t)(calc_crc >> 0);
   
   return HAL_UART_Transmit(&huart1, packet, MAINTENANCE_PACKET_SIZE, UART_TIMEOUT);
 }
@@ -322,6 +322,7 @@ uint8_t RegularSetBrightBroad(uint8_t * packet)
 
 uint8_t RegularGetAddrsStatus(uint8_t * packet)
 {
+  
   if (RegularCheckIPaddress (packet) != 1)
     return 1;
   

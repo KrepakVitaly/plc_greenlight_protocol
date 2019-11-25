@@ -40,6 +40,6 @@ void Init_UUID(void)
   HAL_FLASH_Lock();
   
   // Read IP address from FLASH
-  Signature.IP_address   = *((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_IP_OFFSET);
-  Signature.Host_address = *((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_HOST_OFFSET);
+  Signature.IP_address   = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_IP_OFFSET));
+  Signature.Host_address = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_HOST_OFFSET));
 }
