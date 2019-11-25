@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #define UART_TIMEOUT 100
-#define BOOT_DELAY 5000
+#define BOOT_DELAY 1000
 
 /**
   * @brief PLC UART Init Structure definition

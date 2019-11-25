@@ -176,9 +176,9 @@ uint8_t SendRegularPacketToHost(uint8_t * data)
             REGULAR_PACKET_SIZE - 1,      //  |
             REGULAR_PACKET_HEAD_BYTE_1,   //  | Head
             REGULAR_PACKET_HEAD_BYTE_2,   //  |
-            (uint8_t)(Signature.Host_address >> 24) & 0xFF, // |
-            (uint8_t)(Signature.Host_address >> 16)  & 0xFF, // | Host Address
-            (uint8_t)(Signature.Host_address >> 8)  & 0xFF, // |
+            (uint8_t)(Signature.Host_address >> 24), // |
+            (uint8_t)(Signature.Host_address >> 16), // | Host Address
+            (uint8_t)(Signature.Host_address >> 8), // |
             data[0], data[1], data [2], data [3], 
             data[4], data[5], data [6], data [7], 
             data[8], data[9], data[10], data[11], 
@@ -203,18 +203,18 @@ uint8_t SendMaintenancePacketToHost(uint8_t * data)
             MAINTENANCE_PACKET_SIZE - 1,      //  |
             MAINTENANCE_PACKET_HEAD_BYTE_1,   //  | Head
             MAINTENANCE_PACKET_HEAD_BYTE_2,   //  |
-            (uint8_t)(Signature.idPart1 >> 24) & 0xFF, // |
-            (uint8_t)(Signature.idPart1 >> 16) & 0xFF, // |
-            (uint8_t)(Signature.idPart1 >> 8)  & 0xFF, // | Host Address
-            (uint8_t)(Signature.idPart1 >> 0)  & 0xFF, // |
-            (uint8_t)(Signature.idPart2 >> 24) & 0xFF, // |
-            (uint8_t)(Signature.idPart2 >> 16) & 0xFF, // |
-            (uint8_t)(Signature.idPart2 >> 8)  & 0xFF, // | Host Address
-            (uint8_t)(Signature.idPart2 >> 0)  & 0xFF, // |
-            (uint8_t)(Signature.idPart3 >> 24) & 0xFF, // |
-            (uint8_t)(Signature.idPart3 >> 16) & 0xFF, // |
-            (uint8_t)(Signature.idPart3 >> 8)  & 0xFF, // | Host Address
-            (uint8_t)(Signature.idPart3 >> 0)  & 0xFF, // |
+            (uint8_t)(Signature.idPart1 >> 0) & 0xFF, // |
+            (uint8_t)(Signature.idPart1 >> 8) & 0xFF, // |
+            (uint8_t)(Signature.idPart1 >> 16)  & 0xFF, // | Host Address
+            (uint8_t)(Signature.idPart1 >> 24)  & 0xFF, // |
+            (uint8_t)(Signature.idPart2 >> 0) & 0xFF, // |
+            (uint8_t)(Signature.idPart2 >> 8) & 0xFF, // |
+            (uint8_t)(Signature.idPart2 >> 16)  & 0xFF, // | Host Address
+            (uint8_t)(Signature.idPart2 >> 24)  & 0xFF, // |
+            (uint8_t)(Signature.idPart3 >> 0) & 0xFF, // |
+            (uint8_t)(Signature.idPart3 >> 8) & 0xFF, // |
+            (uint8_t)(Signature.idPart3 >> 16)  & 0xFF, // | Host Address
+            (uint8_t)(Signature.idPart3 >> 24)  & 0xFF, // |
             data[0], data[1], data [2],
             0x00, 0x00, 0x00, 0x00
   };
@@ -236,9 +236,8 @@ uint8_t SendMaintenancePacketToHost(uint8_t * data)
 uint8_t MaintenanceSetAddress(uint8_t * packet)
 {
   Signature.IP_address = \
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+0] << 16) +
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+1] << 8 ) +
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+2] << 0 );
+    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+1] << 16) +
+    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+2] << 8 );
   
   HAL_FLASH_Unlock();
     HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_IP_OFFSET, Signature.IP_address);
@@ -252,9 +251,8 @@ uint8_t MaintenanceSetAddress(uint8_t * packet)
 uint8_t MaintenanceSetGateway(uint8_t * packet)
 {
   Signature.Host_address = \
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+0] << 16) +
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+1] << 8 ) +
-    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+2] << 0 );
+    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+1] << 16) +
+    ((uint32_t)packet[MAINTENANCE_PACKET_HEAD_SIZE+MAINTENANCE_PACKET_ADDRESS_SIZE+2] << 8 );
 
   HAL_FLASH_Unlock();
     HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_HOST_OFFSET, Signature.Host_address);
@@ -296,27 +294,30 @@ uint8_t RegularSetBrightAddrs(uint8_t * packet)
   if (RegularCheckIPaddress (packet) != 1)
     return 1;
   
-  brightness_g = packet[REGULAR_DATA_START_POS];
+  brightness_g = packet[REGULAR_DATA_START_POS+2];
   
   user_pwm_setvalue(brightness_g);
   
+  RegularGetAddrsStatus(packet);
   return 0;
 }
 
 uint8_t RegularSetBrightMulti(uint8_t * packet)
 {
+  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
   // TODO insert PWM update func
   if (RegularCheckIPaddressMulti (packet) != 1)
     return 1;
   
-  brightness_g = packet[REGULAR_DATA_START_POS];
+  brightness_g = packet[REGULAR_DATA_START_POS+2];
   return 0;
 }
 
 uint8_t RegularSetBrightBroad(uint8_t * packet)
 {
+  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
   // TODO insert PWM update func
-  brightness_g = packet[REGULAR_DATA_START_POS];
+  brightness_g = packet[REGULAR_DATA_START_POS+2];
   return 0;
 }
 

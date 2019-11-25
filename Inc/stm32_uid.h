@@ -35,6 +35,7 @@
 #define FLASH_PART_3 0x02
 #define FLASH_IP_OFFSET 0x03
 #define FLASH_HOST_OFFSET 0x04
+#define OFFLINE_OFFSET 0x05
 
 typedef struct {
     uint16_t x;  // x-coordinate
@@ -47,6 +48,7 @@ typedef struct {
     uint32_t idPart3;
     uint32_t IP_address;
     uint32_t Host_address;
+    uint8_t Offline;
     uint32_t Rev_Board;
     uint32_t Firmware_Ver;
     uint16_t flash_size;

@@ -21,6 +21,9 @@ void Init_UUID(void)
   Signature.Lot[6] = (Signature.idPart3 >> 24) & 0xFF;  // Lot number
   Signature.flash_size = ((FLASH_SIZE_ADDR[0] >> 8) & 0xFF) + ((FLASH_SIZE_ADDR[0] << 8) & 0xFF00); //size in kbytes
   
+  //Signature.Offline = (uint8_t) *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*OFFLINE_OFFSET));
+  //Signature.Offline++;
+
   Signature.Firmware_Ver = 1250;
   Signature.Rev_Board = 1250;
   
