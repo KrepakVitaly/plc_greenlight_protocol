@@ -30,6 +30,8 @@
 #define FLASH_ADDR_FOR_STORING 0x08003C00
 #endif
 
+#include "crc.h"
+
 #define FLASH_PART_1       0x00
 #define FLASH_PART_2       0x01
 #define FLASH_PART_3       0x02

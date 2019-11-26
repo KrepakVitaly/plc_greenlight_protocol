@@ -102,6 +102,7 @@ extern "C" {
 #define MAINTENANCE_CMD_SAR       0x00000003 // Set As Router
 #define MAINTENANCE_CMD_ARTR      0x00000004 // Add Route Table Record
 #define MAINTENANCE_CMD_UAH       0x00000005 // Update Address HEX
+#define MAINTENANCE_CMD_RSTD      0x00000006 // Reset stored values (IP, Host, etc)
 
 
 #if MAINTENANCE_PACKET_DATA_SIZE <= 0

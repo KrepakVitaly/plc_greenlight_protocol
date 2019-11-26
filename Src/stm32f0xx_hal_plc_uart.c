@@ -23,6 +23,36 @@
 #include "usart.h"
 #include "main.h"
 #include "tim.h"
+#include "adc.h"
+
+
+void ResetStoredValues(void)
+{
+  FLASH_EraseInitTypeDef EraseInitStruct;
+  // Sector erase:
+  EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+
+  // Set the number of sectors to erase
+  EraseInitStruct.NbPages = 1; 
+
+  // Set the initial sector to erase
+  EraseInitStruct.PageAddress = 0x08003C00U;
+  
+  // contains the configuration information on faulty page in case of error
+  // (0xFFFFFFFF means that all the pages have been correctly erased)
+  uint32_t PageError = 0; 
+
+  // perform erase
+  HAL_FLASH_Unlock();
+  //__HAL_FLASH_CLEAR_FLAG(FLASH_SR_EOP | FLASH_SR_WRPERR | FLASH_SR_PGERR); 
+  HAL_FLASHEx_Erase(&EraseInitStruct, &PageError); // TODO check HAL_OK output
+  HAL_FLASH_Lock();
+  
+  Init_UUID();
+  
+  
+  
+}
 
 uint8_t IsValidMaintenancePacket(uint8_t * test_packet)
 {
@@ -103,9 +133,9 @@ uint8_t IsValidRegularPacket(uint8_t * test_packet)
 
 uint8_t RegularCheckIPaddress (uint8_t * packet)
 {
-  uint32_t rxed_ip =  ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]   << 24) + 
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1]   << 16) +
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2]   << 8);
+  uint32_t rxed_ip =  ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0] << 16) + 
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1] << 8) +
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2] << 0);
   
   if ((rxed_ip & 0x00FFFFFF) != (Signature.IP_address & 0x00FFFFFF))
     return 0;
@@ -115,9 +145,9 @@ uint8_t RegularCheckIPaddress (uint8_t * packet)
 
 uint8_t RegularCheckIPaddressMulti (uint8_t * packet)
 {
-  uint32_t rxed_ip = ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]  << 24 ) + 
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1] << 16 ) +
-                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2] << 8);
+  uint32_t rxed_ip = ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+0]  << 16 ) + 
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+1] << 8 ) +
+                      ((uint32_t)packet[REGULAR_PACKET_HEAD_SIZE+2] << 0);
   
   if ((rxed_ip & 0x00FFFF00) != (Signature.IP_address & 0x00FFFF00))
     return 0;
@@ -137,6 +167,7 @@ uint8_t ProceedMaintenanceCmd(uint8_t * packet)
     case MAINTENANCE_CMD_SAR:     MaintenanceSetAsRoutr(packet);    break; // Set As Router
     case MAINTENANCE_CMD_ARTR:    MaintenanceAddRoutrTb(packet);    break; // Add Route Table Record
     case MAINTENANCE_CMD_UAH:     MaintenanceUpdateFirm(packet);    break; // Update Address HEX
+    case MAINTENANCE_CMD_RSTD:    MaintenanceRestStored(packet);    break; 
     default: break;
   }
 
@@ -176,9 +207,9 @@ uint8_t SendRegularPacketToHost(uint8_t * data)
             REGULAR_PACKET_SIZE - 1,      //  |
             REGULAR_PACKET_HEAD_BYTE_1,   //  | Head
             REGULAR_PACKET_HEAD_BYTE_2,   //  |
-            (uint8_t)(Signature.Host_address >> 24), // |
-            (uint8_t)(Signature.Host_address >> 16), // | Host Address
-            (uint8_t)(Signature.Host_address >> 8), // |
+            (uint8_t)(Signature.Host_address >> 16), // |
+            (uint8_t)(Signature.Host_address >> 8), // | Host Address
+            (uint8_t)(Signature.Host_address >> 0), // |
             data[0], data[1], data [2], data [3], 
             data[4], data[5], data [6], data [7], 
             data[8], data[9], data[10], data[11], 
@@ -231,7 +262,6 @@ uint8_t SendMaintenancePacketToHost(uint8_t * data)
   
   return HAL_UART_Transmit(&huart1, packet, MAINTENANCE_PACKET_SIZE, UART_TIMEOUT);
 }
-
 
 uint8_t MaintenanceSetAddress(uint8_t * packet)
 {
@@ -286,6 +316,14 @@ uint8_t MaintenanceUpdateFirm(uint8_t * packet)
   return 0;
 }
 
+uint8_t MaintenanceRestStored(uint8_t * packet)
+{
+  ResetStoredValues();
+  
+  uint8_t data[MAINTENANCE_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00};
+  
+  return SendMaintenancePacketToHost(data); // Send Okay packet
+}
 
 uint8_t RegularSetBrightAddrs(uint8_t * packet)
 {
@@ -337,7 +375,7 @@ uint8_t RegularGetAddressUUID(uint8_t * packet)
 {
   if (RegularCheckIPaddress (packet) != 1)
     return 1;
-  
+
   uint8_t data[REGULAR_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00};
@@ -368,7 +406,9 @@ uint8_t RegularGetAddressTemp(uint8_t * packet)
   uint8_t data[REGULAR_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00};
-  data[0] = temp_g;
+  data[0] = (uint8_t)((temp_g >> 8) & 0xFF);  
+  data[1] = (uint8_t)(temp_g & 0xFF);                                  
+  data[2] = 0x66;
   
   SendRegularPacketToHost(data); // Send Okay packet
   return 0;
@@ -381,7 +421,9 @@ uint8_t RegularGetAddressVolt(uint8_t * packet)
   uint8_t data[REGULAR_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00};
-  data[0] = volt_g;
+  data[0] = (uint8_t)((volt_g >> 8) & 0xFF);  
+  data[1] = (uint8_t)(volt_g & 0xFF);                                  
+  data[2] = 0x66;
   
   SendRegularPacketToHost(data); // Send Okay packet
   return 0;
@@ -394,8 +436,10 @@ uint8_t RegularGetAddressAmps(uint8_t * packet)
   uint8_t data[REGULAR_PACKET_DATA_SIZE] = {0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00,
                                             0x00, 0x00, 0x00, 0x00};
-  data[0] = amps_g;
-  
+  data[0] = (uint8_t)((amps_g >> 8) & 0xFF);  
+  data[1] = (uint8_t)(amps_g & 0xFF);                                  
+  data[2] = 0x66;
+                                            
   SendRegularPacketToHost(data); // Send Okay packet
   return 0;
 }
@@ -496,5 +540,6 @@ uint8_t RegularUpdateFirmware(uint8_t * packet)
   JumpToBootloader();
   return 0;
 }
+
 
 

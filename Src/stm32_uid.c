@@ -1,5 +1,6 @@
 #include "stm32_uid.h"
 
+
 STM32_UUID Signature;
 
 void Init_UUID(void)
@@ -29,6 +30,45 @@ void Init_UUID(void)
   
   Signature.Firmware_CRC32 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET));
   
+  if (Signature.Firmware_CRC32 == 0xFFFFFFFFU)
+  {
+    // Set the starting address
+    uint32_t startingAddress = 0x08004000U;
+    uint32_t endingAddress = 0x08008000U;
+    
+    uint8_t * data = (uint8_t *)((__IO uint8_t*) startingAddress);
+    
+    __HAL_CRC_DR_RESET(&hcrc);
+    uint32_t crcResult;
+    for(uint32_t address = startingAddress; address < endingAddress; address += 1)    
+    {
+        data = (uint8_t *)((__IO uint8_t*) address);
+        crcResult = HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, 1);
+     
+        if (*data == 0x00)
+        {
+          if ( ((uint8_t *)((__IO uint8_t*) (address))-2)[0] == 0x12 && 
+               ((uint8_t *)((__IO uint8_t*) (address))-1)[0] == 0x7A &&
+               ((uint8_t *)((__IO uint8_t*) (address))+1)[0] == 0xFF && 
+               ((uint8_t *)((__IO uint8_t*) (address))+2)[0] == 0xFF && 
+               ((uint8_t *)((__IO uint8_t*) (address))+3)[0] == 0xFF && 
+               ((uint8_t *)((__IO uint8_t*) (address))+4)[0] == 0xFF && 
+               ((uint8_t *)((__IO uint8_t*) (address))+5)[0] == 0xFF)
+
+            break;
+        }
+    }
+   
+    Signature.Firmware_CRC32 = crcResult;
+    
+    HAL_FLASH_Unlock();
+    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, 
+                     (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET), 
+                     (uint32_t)crcResult);
+    HAL_FLASH_Lock();
+  }
+
+  
   uint32_t flash_part_id1 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_1));
   uint32_t flash_part_id2 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_2));
   uint32_t flash_part_id3 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_PART_3));
@@ -45,6 +85,6 @@ void Init_UUID(void)
   HAL_FLASH_Lock();
   
   // Read IP address from FLASH
-  Signature.IP_address   = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_IP_OFFSET));
-  Signature.Host_address = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_HOST_OFFSET));
+  Signature.IP_address   = (*((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_IP_OFFSET)) & 0x00FFFFFF;
+  Signature.Host_address = (*((__IO uint32_t*) FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FLASH_HOST_OFFSET)) & 0x00FFFFFF;
 }

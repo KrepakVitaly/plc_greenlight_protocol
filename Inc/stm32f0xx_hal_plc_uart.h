@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-#define UART_TIMEOUT 100
+#define UART_TIMEOUT 1000
 #define BOOT_DELAY 1000
 
 /**
@@ -103,6 +103,8 @@ uint8_t HAL_PLC_UART_Rxed_Repeater_Packet(void);
 uint8_t HAL_PLC_UART_Is_Packet_Received(void);
 uint8_t HAL_PLC_UART_CheckRegularPacket(void);
 
+void ResetStoredValues(void);
+
 uint8_t IsValidMaintenancePacket(uint8_t *);
 uint8_t IsValidRegularPacket(uint8_t *);
 uint8_t ProceedMaintenanceCmd(uint8_t *);
@@ -118,6 +120,7 @@ uint8_t MaintenanceSetGateway(uint8_t *);// Set Gateway Address
 uint8_t MaintenanceSetAsRoutr(uint8_t *);// Set As Router
 uint8_t MaintenanceAddRoutrTb(uint8_t *);// Add Route Table Record
 uint8_t MaintenanceUpdateFirm(uint8_t *);// Update Address HEX
+uint8_t MaintenanceRestStored(uint8_t *);
 
 uint8_t RegularSetBrightAddrs(uint8_t *);
 uint8_t RegularSetBrightMulti(uint8_t *);
