@@ -18,15 +18,15 @@
 #ifndef STM32F0XX_HAL_PLC_UART_H_
 #define STM32F0XX_HAL_PLC_UART_H_
 
-#include "stm32f0xx_hal.h"
-#include "stm32f0xx_hal_def.h"
 
 #ifdef STM32F405xx
   #define __bool_true_false_are_defined 1
   #include "stm32f4xx_hal.h"
+  #include "stm32f4xx_hal_def.h"
 #endif
 #if defined(STM32F030x6) || defined(STM32F031x6)
   #include "stm32f0xx_hal.h"
+  #include "stm32f0xx_hal_def.h"
 #endif
 
 #ifdef __cplusplus
@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #define UART_TIMEOUT 1000
-#define BOOT_DELAY 1000
+#define BOOT_DELAY 4000
 
 /**
   * @brief PLC UART Init Structure definition
