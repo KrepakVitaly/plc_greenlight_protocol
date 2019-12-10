@@ -30,6 +30,14 @@
 #define FLASH_ADDR_FOR_STORING 0x08003C00
 #endif
 
+#ifdef STM32F405xx
+#include "stm32f4xx_hal.h"
+#define STM32_UUID_ADDR ((uint32_t *)0x1FFF7A10)
+#define FLASH_SIZE_ADDR  ((uint32_t *) 0x1FFF7A22)
+
+#define FLASH_ADDR_FOR_STORING 0x08008000
+#endif
+
 #include "crc.h"
 
 #define FLASH_PART_1       0x00
