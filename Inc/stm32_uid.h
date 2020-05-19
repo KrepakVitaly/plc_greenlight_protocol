@@ -27,7 +27,7 @@
 #define STM32_UUID_ADDR ((uint32_t *)0x1FFFF7AC)
 #define FLASH_SIZE_ADDR  ((uint32_t *)0x1FFFF7CC)
 
-#define FLASH_ADDR_FOR_STORING 0x08003C00
+#define FLASH_ADDR_FOR_STORING 0x08003C00U
 #endif
 
 #ifdef STM32F405xx
@@ -63,7 +63,7 @@ typedef struct {
     uint8_t Offline;
     uint32_t Rev_Board;
     uint32_t Firmware_Ver;
-    uint32_t Firmware_CRC32;
+    __IO uint32_t Firmware_CRC32;
     uint16_t flash_size;
 } STM32_UUID;
 
