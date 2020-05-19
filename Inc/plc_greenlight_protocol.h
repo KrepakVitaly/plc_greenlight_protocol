@@ -157,8 +157,8 @@ PacketStatus Is_Maintenance_Packet (uint8_t * buf, uint8_t buf_size);
 PacketStatus Is_Repeater_Packet    (uint8_t * buf, uint8_t buf_size);
 
 
-
-
+uint32_t CalcCRC(uint8_t * pData, uint32_t DataLength);
+uint32_t crc_32_update(uint8_t *data, uint32_t length); 
 #ifdef __cplusplus
 }
 #endif
