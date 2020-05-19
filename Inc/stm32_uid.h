@@ -63,7 +63,7 @@ typedef struct {
     uint8_t Offline;
     uint32_t Rev_Board;
     uint32_t Firmware_Ver;
-    __IO uint32_t Firmware_CRC32;
+    uint32_t Firmware_CRC32;
     uint16_t flash_size;
 } STM32_UUID;
 

@@ -28,9 +28,9 @@ void Init_UUID(void)
   Signature.Firmware_Ver = 1230;
   Signature.Rev_Board = 1250;
   
-  Signature.Firmware_CRC32 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET));
+  Signature.Firmware_CRC32 = *((__IO uint32_t*) (FLASH_ADDR_FOR_STORING+4*FW_CRC_OFFSET));
 
-  if ( (Signature.Firmware_CRC32 == 0xFFFFFFFFU) || ((Signature.Firmware_CRC32 & 0xFFFFFFFF) == 0x00000000))
+  if ( Signature.Firmware_CRC32 == 0xFFFFFFFFU )
   {
     // Set the starting address
     uint32_t startingAddress = 0x08004000U; 
@@ -39,7 +39,7 @@ void Init_UUID(void)
     uint8_t * data = (uint8_t *)((__IO uint8_t*) startingAddress);
     
     __HAL_CRC_DR_RESET(&hcrc);
-    uint32_t crcResult;
+    uint32_t crcResult = 0;
     crcResult = HAL_CRC_Calculate(&hcrc,  (uint32_t*)data, 1);
     for(uint32_t address = startingAddress; address < endingAddress; address += 1)    
     {
@@ -62,9 +62,8 @@ void Init_UUID(void)
     Signature.Firmware_CRC32 = crcResult;
     
     HAL_FLASH_Unlock();
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, 
-                     FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET, 
-                     (uint32_t)Signature.Firmware_CRC32);
+    uint8_t res = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FLASH_ADDR_FOR_STORING+sizeof(uint32_t)*FW_CRC_OFFSET, 
+                     crcResult);
     HAL_FLASH_Lock();
   }
 
